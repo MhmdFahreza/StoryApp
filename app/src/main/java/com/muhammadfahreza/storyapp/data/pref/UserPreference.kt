@@ -32,7 +32,8 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         }
     }
 
-    suspend fun logout() {
+    // Fungsi untuk menghapus data sesi
+    suspend fun clearSession() {
         dataStore.edit { preferences ->
             preferences.clear()
         }

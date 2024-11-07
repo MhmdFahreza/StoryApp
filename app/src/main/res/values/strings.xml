@@ -14,4 +14,8 @@
     <string name="greeting">Halo %1$s,</string>
     <string name="logout">Keluar</string>
     <string name="password_error_message">Password harus terdiri dari minimal 8 karakter</string>
+    <string name="JudulStory">Dicoding</string>
+    <string name="DeskripsiStory">Deskripsi story</string>
+    <string name="menu">Menu</string>
+    <string name="tittle_main">Dicoding Story</string>
 </resources>

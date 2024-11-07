@@ -1,24 +1,30 @@
 package com.muhammadfahreza.storyapp.view.main
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
+import android.view.Menu
+import android.view.MenuItem
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.PopupMenu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.muhammadfahreza.storyapp.R
 import com.muhammadfahreza.storyapp.databinding.ActivityMainBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel> {
         ViewModelFactory.getInstance(this)
     }
     private lateinit var binding: ActivityMainBinding
+    private lateinit var storyAdapter: StoryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +39,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupView()
-        setupAction()
-        playAnimation()
+        setupRecyclerView()
+
+        binding.menuIcon.setOnClickListener { showPopupMenu() }
+    }
+
+    private fun showPopupMenu() {
+        // Create a PopupMenu to display the options
+        val popup = PopupMenu(this, binding.menuIcon)
+        popup.menuInflater.inflate(R.menu.menu_main, popup.menu)
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_logout -> {
+                    logout()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun setupView() {
@@ -50,26 +73,39 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
     }
 
-    private fun setupAction() {
-        binding.logoutButton.setOnClickListener {
-            viewModel.logout()
+    private fun setupRecyclerView() {
+        val storyList = listOf(
+            Story("Dicoding", "Bangkit adalah kesempatan luar biasa.", R.drawable.image_dicoding),
+            Story("Dicoding", "Menumbuhkan kecintaan mahasiswa pada programming itu, yang utama.", R.drawable.image_welcome),
+        )
+
+        storyAdapter = StoryAdapter(storyList)
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = storyAdapter
         }
     }
 
-    private fun playAnimation() {
-        ObjectAnimator.ofFloat(binding.imageView, View.TRANSLATION_X, -30f, 30f).apply {
-            duration = 6000
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-        }.start()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
 
-        val name = ObjectAnimator.ofFloat(binding.nameTextView, View.ALPHA, 1f).setDuration(100)
-        val message = ObjectAnimator.ofFloat(binding.messageTextView, View.ALPHA, 1f).setDuration(100)
-        val logout = ObjectAnimator.ofFloat(binding.logoutButton, View.ALPHA, 1f).setDuration(100)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                logout()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
-        AnimatorSet().apply {
-            playSequentially(name, message, logout)
-            startDelay = 100
-        }.start()
+    private fun logout() {
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.logout()  // Panggil fungsi logout dari ViewModel
+        }
+        startActivity(Intent(this, WelcomeActivity::class.java))
+        finish()
     }
 }

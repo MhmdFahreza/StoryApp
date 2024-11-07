@@ -13,7 +13,6 @@ class UserRepository private constructor(
     private val apiService: ApiService
 ) {
 
-    // Function to handle user registration via the API
     fun register(name: String, email: String, password: String): Flow<Result<RegisterResponse>> = flow {
         try {
             val response = apiService.register(name, email, password)
@@ -23,7 +22,7 @@ class UserRepository private constructor(
         }
     }
 
-     fun login(email: String, password: String): Flow<Result<LoginResponse>> = flow {
+    fun login(email: String, password: String): Flow<Result<LoginResponse>> = flow {
         try {
             val response = apiService.login(email, password)
             emit(Result.success(response))
@@ -32,26 +31,23 @@ class UserRepository private constructor(
         }
     }
 
-    // Function to save user session
     suspend fun saveSession(user: UserModel) {
         userPreference.saveSession(user)
     }
 
-    // Function to get user session as a Flow
     fun getSession(): Flow<UserModel> {
         return userPreference.getSession()
     }
 
-    // Function to handle user logout
+    // Fungsi logout untuk menghapus sesi pengguna
     suspend fun logout() {
-        userPreference.logout()
+        userPreference.clearSession()
     }
 
     companion object {
         @Volatile
         private var instance: UserRepository? = null
 
-        // Method to get the singleton instance of UserRepository
         fun getInstance(
             userPreference: UserPreference,
             apiService: ApiService
