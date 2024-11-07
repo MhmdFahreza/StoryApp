@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class StoryActivity : AppCompatActivity() {
-    private val viewModel by viewModels<MainViewModel> {
+    private val viewModel by viewModels<StoryViewModel> {
         ViewModelFactory.getInstance(this)
     }
     private lateinit var binding: ActivityStoryBinding

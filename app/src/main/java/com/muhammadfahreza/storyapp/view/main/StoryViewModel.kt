@@ -6,7 +6,7 @@ import androidx.lifecycle.asLiveData
 import com.muhammadfahreza.storyapp.data.UserRepository
 import com.muhammadfahreza.storyapp.data.pref.UserModel
 
-class MainViewModel(private val repository: UserRepository) : ViewModel() {
+class StoryViewModel(private val repository: UserRepository) : ViewModel() {
     fun getSession(): LiveData<UserModel> {
         return repository.getSession().asLiveData()
     }

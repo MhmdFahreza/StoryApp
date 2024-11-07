@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.muhammadfahreza.storyapp.data.UserRepository
 import com.muhammadfahreza.storyapp.di.Injection
 import com.muhammadfahreza.storyapp.view.login.LoginViewModel
-import com.muhammadfahreza.storyapp.view.main.MainViewModel
+import com.muhammadfahreza.storyapp.view.main.StoryViewModel
 import com.muhammadfahreza.storyapp.view.signup.SignupViewModel
 
 class ViewModelFactory(private val repository: UserRepository) : ViewModelProvider.NewInstanceFactory() {
@@ -14,8 +14,8 @@ class ViewModelFactory(private val repository: UserRepository) : ViewModelProvid
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
-            modelClass.isAssignableFrom(MainViewModel::class.java) -> {
-                MainViewModel(repository) as T
+            modelClass.isAssignableFrom(StoryViewModel::class.java) -> {
+                StoryViewModel(repository) as T
             }
             modelClass.isAssignableFrom(LoginViewModel::class.java) -> {
                 LoginViewModel(repository) as T
