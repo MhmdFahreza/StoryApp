@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.muhammadfahreza.storyapp.data.pref.UserModel
 import com.muhammadfahreza.storyapp.databinding.ActivityLoginBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
-import com.muhammadfahreza.storyapp.view.main.MainActivity
+import com.muhammadfahreza.storyapp.view.main.StoryActivity
 
 class LoginActivity : AppCompatActivity() {
     private val viewModel by viewModels<LoginViewModel> {
@@ -67,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
                             setTitle("Yeah!")
                             setMessage("Anda berhasil login. Sudah tidak sabar untuk belajar ya?")
                             setPositiveButton("Lanjut") { _, _ ->
-                                val intent = Intent(context, MainActivity::class.java)
+                                val intent = Intent(context, StoryActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                                 startActivity(intent)
                                 finish()

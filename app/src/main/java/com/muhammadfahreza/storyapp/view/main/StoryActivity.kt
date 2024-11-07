@@ -12,23 +12,23 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
-import com.muhammadfahreza.storyapp.databinding.ActivityMainBinding
+import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class StoryActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel> {
         ViewModelFactory.getInstance(this)
     }
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityStoryBinding
     private lateinit var storyAdapter: StoryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityStoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         viewModel.getSession().observe(this) { user ->
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         storyAdapter = StoryAdapter(storyList)
         binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager = LinearLayoutManager(this@StoryActivity)
             adapter = storyAdapter
         }
     }
