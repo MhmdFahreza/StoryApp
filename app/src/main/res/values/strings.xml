@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">StoryApp</string>
+    <string name="signup">Daftar</string>
+    <string name="login">Masuk</string>
+    <string name="message_welcome_page">Mau melihat Android, iOS, Machine Learning, Cloud, Front-End, Back-End, dan bidang IT lainnya? Yuk Daftar!</string>
+    <string name="title_welcome_page">Selamat datang di Dicoding StoryApp!</string>
+    <string name="title_signup_page">Lengkapi data dirimu untuk lihat story Dicoding !!!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="message_login_page">Masukkan dulu terlebih dahulu datanya kawan</string>
+    <string name="title_login_page">Sudah siap untuk melihat story Dicoding ?!!</string>
+    <string name="name">Nama</string>
+    <string name="message_main_page">Selamat datang di Story Dicoding.</string>
+    <string name="greeting">Halo %1$s,</string>
+    <string name="logout">Keluar</string>
+    <string name="password_error_message">Password harus terdiri dari minimal 8 karakter</string>
+</resources>
