@@ -18,4 +18,5 @@
     <string name="DeskripsiStory">Deskripsi story</string>
     <string name="menu">Menu</string>
     <string name="tittle_main">Dicoding Story</string>
+    <string name="no_stories_available">Tidak ada story yang tersedia</string>
 </resources>

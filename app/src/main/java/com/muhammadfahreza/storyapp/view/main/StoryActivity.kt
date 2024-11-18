@@ -5,18 +5,18 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.PopupMenu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class StoryActivity : AppCompatActivity() {
@@ -31,21 +31,35 @@ class StoryActivity : AppCompatActivity() {
         binding = ActivityStoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel.getSession().observe(this) { user ->
-            if (!user.isLogin) {
-                startActivity(Intent(this, WelcomeActivity::class.java))
-                finish()
+        lifecycleScope.launch {
+            viewModel.getSession().collect { user ->
+                if (!user.isLogin) {
+                    startActivity(Intent(this@StoryActivity, WelcomeActivity::class.java))
+                    finish()
+                } else {
+                    viewModel.fetchStories(user.token, page = 1, size = 10) // Token diambil dari sesi pengguna
+                }
             }
         }
 
         setupView()
         setupRecyclerView()
 
+        viewModel.stories.observe(this) { storyList ->
+            storyAdapter.submitList(storyList)
+            if (storyList.isEmpty()) {
+                binding.recyclerView.visibility = View.GONE
+                binding.emptyView.visibility = View.VISIBLE
+            } else {
+                binding.recyclerView.visibility = View.VISIBLE
+                binding.emptyView.visibility = View.GONE
+            }
+        }
+
         binding.menuIcon.setOnClickListener { showPopupMenu() }
     }
 
     private fun showPopupMenu() {
-        // Create a PopupMenu to display the options
         val popup = PopupMenu(this, binding.menuIcon)
         popup.menuInflater.inflate(R.menu.menu_main, popup.menu)
         popup.setOnMenuItemClickListener { item ->
@@ -74,12 +88,7 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        val storyList = listOf(
-            Story("Dicoding", "Bangkit adalah kesempatan luar biasa.", R.drawable.image_dicoding),
-            Story("Dicoding", "Menumbuhkan kecintaan mahasiswa pada programming itu, yang utama.", R.drawable.image_welcome),
-        )
-
-        storyAdapter = StoryAdapter(storyList)
+        storyAdapter = StoryAdapter()
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@StoryActivity)
             adapter = storyAdapter
@@ -102,8 +111,8 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        CoroutineScope(Dispatchers.IO).launch {
-            viewModel.logout()  // Panggil fungsi logout dari ViewModel
+        lifecycleScope.launch {
+            viewModel.logout()
         }
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()

@@ -6,14 +6,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.muhammadfahreza.storyapp.R
+import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 
-class StoryAdapter(private val storyList: List<Story>) : RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
+class StoryAdapter : RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
+    private val storyList = mutableListOf<ListStoryItem>()
 
-    inner class StoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val storyImage: ImageView = view.findViewById(R.id.storyImage)
-        val storyTitle: TextView = view.findViewById(R.id.storyTitle)
-        val storyDescription: TextView = view.findViewById(R.id.storyDescription)
+    fun submitList(stories: List<ListStoryItem>) {
+        storyList.clear()
+        storyList.addAll(stories)
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoryViewHolder {
@@ -23,13 +26,22 @@ class StoryAdapter(private val storyList: List<Story>) : RecyclerView.Adapter<St
 
     override fun onBindViewHolder(holder: StoryViewHolder, position: Int) {
         val story = storyList[position]
-        holder.storyTitle.text = story.title
-        holder.storyDescription.text = story.description
-        holder.storyImage.setImageResource(story.imageResId) // Jika Anda menggunakan gambar lokal
-
-        // Jika menggunakan URL untuk gambar, gunakan library seperti Glide atau Picasso
-        // Glide.with(holder.itemView.context).load(story.imageUrl).into(holder.storyImage)
+        holder.bind(story)
     }
 
     override fun getItemCount(): Int = storyList.size
+
+    class StoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvName: TextView = itemView.findViewById(R.id.storyTitle)
+        private val tvDescription: TextView = itemView.findViewById(R.id.storyDescription)
+        private val imgStory: ImageView = itemView.findViewById(R.id.storyImage)
+
+        fun bind(story: ListStoryItem) {
+            tvName.text = story.name
+            tvDescription.text = story.description
+            Glide.with(itemView.context)
+                .load(story.photoUrl)
+                .into(imgStory)
+        }
+    }
 }
