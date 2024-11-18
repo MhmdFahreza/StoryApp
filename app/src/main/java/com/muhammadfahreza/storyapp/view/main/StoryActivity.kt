@@ -58,7 +58,6 @@ class StoryActivity : AppCompatActivity() {
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
 
-        // Tambahkan listener untuk FloatingActionButton
         binding.addFab.setOnClickListener {
             val intent = Intent(this, TambahActivity::class.java)
             startActivity(intent)

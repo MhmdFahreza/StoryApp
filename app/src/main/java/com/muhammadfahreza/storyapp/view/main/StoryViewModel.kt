@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.muhammadfahreza.storyapp.data.StoryRepository
 import com.muhammadfahreza.storyapp.data.pref.UserModel
 import com.muhammadfahreza.storyapp.data.pref.UserPreference
@@ -19,24 +21,43 @@ class StoryViewModel(
     private val _stories = MutableLiveData<List<ListStoryItem>>()
     val stories: LiveData<List<ListStoryItem>> get() = _stories
 
+    private val gson = Gson()
+
     fun fetchStories(token: String, page: Int? = null, size: Int? = null) {
         viewModelScope.launch {
             try {
                 val response = storyRepository.getStories(token, page, size)
-                _stories.value = response.listStory?.filterNotNull() ?: emptyList()
+                val storyList = response.listStory?.filterNotNull() ?: emptyList()
+                _stories.value = storyList
+
+                // Save stories to DataStore
+                saveStoriesToDataStore(storyList)
             } catch (e: Exception) {
                 e.printStackTrace()
+                loadStoriesFromDataStore()
             }
         }
     }
 
-    fun getSession(): Flow<UserModel> {
-        return userPreference.getSession()
+    private suspend fun saveStoriesToDataStore(stories: List<ListStoryItem>) {
+        val storiesJson = gson.toJson(stories)
+        userPreference.saveStories(storiesJson)
     }
 
-    fun logout() {
+    private fun loadStoriesFromDataStore() {
         viewModelScope.launch {
-            userPreference.clearSession()
+            val storiesJson = userPreference.getStories()
+            if (storiesJson.isNotEmpty()) {
+                val type = object : TypeToken<List<ListStoryItem>>() {}.type
+                val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
+                _stories.postValue(cachedStories)
+            }
         }
+    }
+
+    fun getSession(): Flow<UserModel> = userPreference.getSession()
+
+    fun logout() {
+        viewModelScope.launch { userPreference.clearSession() }
     }
 }

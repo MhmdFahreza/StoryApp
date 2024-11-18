@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "session")
@@ -32,11 +33,23 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         }
     }
 
-    // Fungsi untuk menghapus data sesi
     suspend fun clearSession() {
         dataStore.edit { preferences ->
             preferences.clear()
         }
+    }
+
+    private val STORIES_KEY = stringPreferencesKey("stories")
+
+    suspend fun saveStories(storiesJson: String) {
+        dataStore.edit { preferences ->
+            preferences[STORIES_KEY] = storiesJson
+        }
+    }
+
+    suspend fun getStories(): String {
+        val preferences = dataStore.data.first()
+        return preferences[STORIES_KEY] ?: ""
     }
 
     companion object {
