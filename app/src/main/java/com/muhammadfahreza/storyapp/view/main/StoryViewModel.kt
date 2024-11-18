@@ -10,8 +10,11 @@ import com.muhammadfahreza.storyapp.data.StoryRepository
 import com.muhammadfahreza.storyapp.data.pref.UserModel
 import com.muhammadfahreza.storyapp.data.pref.UserPreference
 import com.muhammadfahreza.storyapp.data.response.ListStoryItem
+import com.muhammadfahreza.storyapp.data.response.UploadResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 
 class StoryViewModel(
     private val storyRepository: StoryRepository,
@@ -54,6 +57,24 @@ class StoryViewModel(
             }
         }
     }
+
+    fun uploadStory(
+        token: String,
+        description: RequestBody,
+        image: MultipartBody.Part
+    ): LiveData<Result<UploadResponse>> {
+        val result = MutableLiveData<Result<UploadResponse>>()
+        viewModelScope.launch {
+            try {
+                val response = storyRepository.uploadStory(token, image, description)
+                result.postValue(Result.success(response))
+            } catch (e: Exception) {
+                result.postValue(Result.failure(e))
+            }
+        }
+        return result
+    }
+
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 

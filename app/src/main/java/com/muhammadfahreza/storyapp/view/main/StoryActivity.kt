@@ -130,4 +130,15 @@ class StoryActivity : AppCompatActivity() {
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()
     }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            viewModel.getSession().collect { user ->
+                if (user.isLogin) {
+                    viewModel.fetchStories(user.token, page = 1, size = 10)
+                }
+            }
+        }
+    }
 }

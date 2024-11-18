@@ -1,27 +1,66 @@
 package com.muhammadfahreza.storyapp.view.main
 
-import android.app.Activity
-import android.content.Intent
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import com.muhammadfahreza.storyapp.databinding.ActivityTambahBinding
+import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.createCustomTempFile
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.io.FileOutputStream
 
 class TambahActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTambahBinding
     private var currentPhotoPath: String? = null
+    private var selectedImageFile: File? = null
+
+    private val viewModel by lazy {
+        ViewModelFactory.getInstance(this).create(StoryViewModel::class.java)
+    }
 
     companion object {
-        private const val REQUEST_CODE_CAMERA = 100
-        private const val REQUEST_CODE_GALLERY = 101
         private const val PERMISSION_REQUEST_CODE = 123
+    }
+
+    // Camera launcher
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            currentPhotoPath?.let { path ->
+                selectedImageFile = File(path)
+                val imageUri = Uri.fromFile(selectedImageFile)
+                binding.imagePlaceholder.setImageURI(imageUri)
+            }
+        } else {
+            Toast.makeText(this, "Operasi kamera dibatalkan.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Gallery launcher
+    private val pickGalleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            val filePath = uriToFile(uri, this)
+            selectedImageFile = filePath
+            binding.imagePlaceholder.setImageURI(uri)
+        } else {
+            Toast.makeText(this, "Tidak ada gambar yang dipilih.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +77,10 @@ class TambahActivity : AppCompatActivity() {
         binding.btnGallery.setOnClickListener {
             openGallery()
         }
+
+        binding.btnUpload.setOnClickListener {
+            uploadStory()
+        }
     }
 
     private fun checkPermissions() {
@@ -49,7 +92,22 @@ class TambahActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if (deniedPermissions.isNotEmpty()) {
-            requestPermissions(deniedPermissions.toTypedArray(), PERMISSION_REQUEST_CODE)
+            ActivityCompat.requestPermissions(this, deniedPermissions.toTypedArray(), PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -62,58 +120,65 @@ class TambahActivity : AppCompatActivity() {
                 it
             )
             currentPhotoPath = it.absolutePath
-            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-                putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            }
-            if (cameraIntent.resolveActivity(packageManager) != null) {
-                startActivityForResult(cameraIntent, REQUEST_CODE_CAMERA)
-            } else {
-                Toast.makeText(this, "Kamera tidak tersedia.", Toast.LENGTH_SHORT).show()
-            }
+            takePictureLauncher.launch(photoURI)
         } ?: run {
             Toast.makeText(this, "Gagal membuat file sementara.", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.type = "image/*"
-        val mimeTypes = arrayOf("image/jpeg", "image/png")
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-        startActivityForResult(intent, REQUEST_CODE_GALLERY)
+        pickGalleryLauncher.launch("image/*")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_CODE_CAMERA -> {
-                    currentPhotoPath?.let { path ->
-                        val imageUri = Uri.fromFile(File(path))
-                        binding.imagePlaceholder.setImageURI(imageUri)
-                    }
-                }
-                REQUEST_CODE_GALLERY -> {
-                    data?.data?.let { uri ->
-                        binding.imagePlaceholder.setImageURI(uri)
+    fun uriToFile(selectedImg: Uri, context: Context): File {
+        val contentResolver = context.contentResolver
+        val myFile = createCustomTempFile(context)
+
+        val inputStream = contentResolver.openInputStream(selectedImg)!!
+        val outputStream = FileOutputStream(myFile)
+        val buffer = ByteArray(1024)
+        var length: Int
+        while (inputStream.read(buffer).also { length = it } > 0) {
+            outputStream.write(buffer, 0, length)
+        }
+        outputStream.close()
+        inputStream.close()
+
+        return myFile
+    }
+
+    private fun uploadStory() {
+        val file = selectedImageFile
+        val descriptionText = binding.editDescription.text.toString()
+
+        if (file != null && descriptionText.isNotEmpty()) {
+            val description = descriptionText.toRequestBody("text/plain".toMediaType())
+            val imageFile = file.asRequestBody("image/jpeg".toMediaType())
+            val imageMultipart = MultipartBody.Part.createFormData(
+                "photo",
+                file.name,
+                imageFile
+            )
+            lifecycleScope.launch {
+                viewModel.getSession().collect { user ->
+                    if (user.token.isNotEmpty()) {
+                        val token = "Bearer ${user.token}"
+                        viewModel.uploadStory(token, description, imageMultipart)
+                            .observe(this@TambahActivity) { result ->
+                                result.onSuccess {
+                                    Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }.onFailure {
+                                    Toast.makeText(this@TambahActivity, "Upload gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                    } else {
+                        Toast.makeText(this@TambahActivity, "Token tidak ditemukan. Harap login ulang.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         } else {
-            Toast.makeText(this, "Operasi dibatalkan.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
-                Toast.makeText(this, "Izin diperlukan untuk melanjutkan.", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this, "Isi deskripsi dan pilih gambar terlebih dahulu!", Toast.LENGTH_SHORT).show()
         }
     }
 }
