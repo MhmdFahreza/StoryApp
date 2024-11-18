@@ -20,4 +20,9 @@
     <string name="tittle_main">Dicoding Story</string>
     <string name="no_stories_available">Tidak ada story yang tersedia</string>
     <string name="tambah">Tambah</string>
+    <string name="image_placeholder">image placeholder</string>
+    <string name="kamera">Kamera</string>
+    <string name="galeri">Galeri</string>
+    <string name="deskripsi">Deskripsi</string>
+    <string name="upload">Upload</string>
 </resources>
