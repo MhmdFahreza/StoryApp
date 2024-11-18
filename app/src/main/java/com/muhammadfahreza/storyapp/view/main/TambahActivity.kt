@@ -2,6 +2,8 @@ package com.muhammadfahreza.storyapp.view.main
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -19,6 +21,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -147,18 +150,38 @@ class TambahActivity : AppCompatActivity() {
         return myFile
     }
 
+    private fun compressImage(file: File): File {
+        val bitmap = BitmapFactory.decodeFile(file.path)
+        var quality = 80 // Mulai dengan kualitas 80%
+        val outputStream = ByteArrayOutputStream()
+
+        do {
+            outputStream.reset()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            quality -= 10 // Kurangi kualitas hingga ukuran file kecil
+        } while (outputStream.toByteArray().size > 1024 * 500) // Pastikan ukuran < 500KB
+
+        val compressedFile = File(file.parent, "compressed_${file.name}")
+        FileOutputStream(compressedFile).use {
+            it.write(outputStream.toByteArray())
+        }
+        return compressedFile
+    }
+
     private fun uploadStory() {
         val file = selectedImageFile
         val descriptionText = binding.editDescription.text.toString()
 
         if (file != null && descriptionText.isNotEmpty()) {
+            val compressedFile = compressImage(file) // Kompres file gambar
             val description = descriptionText.toRequestBody("text/plain".toMediaType())
-            val imageFile = file.asRequestBody("image/jpeg".toMediaType())
+            val imageFile = compressedFile.asRequestBody("image/jpeg".toMediaType())
             val imageMultipart = MultipartBody.Part.createFormData(
                 "photo",
-                file.name,
+                compressedFile.name,
                 imageFile
             )
+
             lifecycleScope.launch {
                 viewModel.getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
