@@ -37,7 +37,7 @@ class StoryActivity : AppCompatActivity() {
                     startActivity(Intent(this@StoryActivity, WelcomeActivity::class.java))
                     finish()
                 } else {
-                    viewModel.fetchStories(user.token, page = 1, size = 10) // Token diambil dari sesi pengguna
+                    viewModel.fetchStories(user.token, page = 1, size = 10)
                 }
             }
         }
@@ -57,6 +57,12 @@ class StoryActivity : AppCompatActivity() {
         }
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
+
+        // Tambahkan listener untuk FloatingActionButton
+        binding.addFab.setOnClickListener {
+            val intent = Intent(this, TambahActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun showPopupMenu() {
