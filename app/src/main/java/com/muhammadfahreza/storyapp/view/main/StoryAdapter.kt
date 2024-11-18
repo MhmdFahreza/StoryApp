@@ -10,7 +10,9 @@ import com.bumptech.glide.Glide
 import com.muhammadfahreza.storyapp.R
 import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 
-class StoryAdapter : RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
+class StoryAdapter(private val onItemClick: (ListStoryItem) -> Unit) :
+    RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
+
     private val storyList = mutableListOf<ListStoryItem>()
 
     fun submitList(stories: List<ListStoryItem>) {
@@ -27,6 +29,9 @@ class StoryAdapter : RecyclerView.Adapter<StoryAdapter.StoryViewHolder>() {
     override fun onBindViewHolder(holder: StoryViewHolder, position: Int) {
         val story = storyList[position]
         holder.bind(story)
+        holder.itemView.setOnClickListener {
+            onItemClick(story)
+        }
     }
 
     override fun getItemCount(): Int = storyList.size

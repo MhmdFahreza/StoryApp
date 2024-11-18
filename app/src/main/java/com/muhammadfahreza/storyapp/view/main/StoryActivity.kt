@@ -88,7 +88,15 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        storyAdapter = StoryAdapter()
+        storyAdapter = StoryAdapter { story ->
+            val intent = Intent(this, DetailActivity::class.java).apply {
+                putExtra(DetailActivity.EXTRA_TITLE, story.name)
+                putExtra(DetailActivity.EXTRA_DESCRIPTION, story.description)
+                putExtra(DetailActivity.EXTRA_IMAGE_URL, story.photoUrl)
+            }
+            startActivity(intent)
+        }
+
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@StoryActivity)
             adapter = storyAdapter
