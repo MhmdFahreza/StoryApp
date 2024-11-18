@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -186,8 +187,16 @@ class TambahActivity : AppCompatActivity() {
                 viewModel.getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
                         val token = "Bearer ${user.token}"
+
+                        binding.progressBar.visibility = View.VISIBLE
+                        binding.btnUpload.isEnabled = false
+
                         viewModel.uploadStory(token, description, imageMultipart)
                             .observe(this@TambahActivity) { result ->
+                                // Sembunyikan ProgressBar setelah selesai upload
+                                binding.progressBar.visibility = View.GONE
+                                binding.btnUpload.isEnabled = true
+
                                 result.onSuccess {
                                     Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
                                     finish()
