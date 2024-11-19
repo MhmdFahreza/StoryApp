@@ -9,11 +9,13 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.PopupMenu
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
+import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
@@ -26,6 +28,18 @@ class StoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStoryBinding
     private lateinit var storyAdapter: StoryAdapter
 
+    private val tambahActivityLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val newStory = result.data?.getParcelableExtra<ListStoryItem>("NEW_STORY")
+            newStory?.let {
+                storyAdapter.addStoryAtTop(it)
+                binding.recyclerView.smoothScrollToPosition(0)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStoryBinding.inflate(layoutInflater)
@@ -37,7 +51,7 @@ class StoryActivity : AppCompatActivity() {
                     startActivity(Intent(this@StoryActivity, WelcomeActivity::class.java))
                     finish()
                 } else {
-                    viewModel.fetchStories(user.token, page = 1, size = 10)
+                    refreshStories()
                 }
             }
         }
@@ -60,7 +74,7 @@ class StoryActivity : AppCompatActivity() {
 
         binding.addFab.setOnClickListener {
             val intent = Intent(this, TambahActivity::class.java)
-            startActivity(intent)
+            tambahActivityLauncher.launch(intent)
         }
     }
 
@@ -80,7 +94,6 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
-        @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.hide(WindowInsets.Type.statusBars())
         } else {
@@ -108,6 +121,16 @@ class StoryActivity : AppCompatActivity() {
         }
     }
 
+    private fun refreshStories() {
+        lifecycleScope.launch {
+            viewModel.getSession().collect { user ->
+                if (user.isLogin) {
+                    viewModel.fetchStories(user.token, page = 1, size = 10)
+                }
+            }
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -129,16 +152,5 @@ class StoryActivity : AppCompatActivity() {
         }
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            viewModel.getSession().collect { user ->
-                if (user.isLogin) {
-                    viewModel.fetchStories(user.token, page = 1, size = 10)
-                }
-            }
-        }
     }
 }

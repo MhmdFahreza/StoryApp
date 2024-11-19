@@ -21,6 +21,11 @@ class StoryAdapter(private val onItemClick: (ListStoryItem) -> Unit) :
         notifyDataSetChanged()
     }
 
+    fun addStoryAtTop(story: ListStoryItem) {
+        storyList.add(0, story)
+        notifyItemInserted(0)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoryViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_story, parent, false)
         return StoryViewHolder(view)

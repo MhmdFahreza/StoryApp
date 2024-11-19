@@ -1,6 +1,7 @@
 package com.muhammadfahreza.storyapp.view.main
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityTambahBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.createCustomTempFile
@@ -39,7 +41,6 @@ class TambahActivity : AppCompatActivity() {
         private const val PERMISSION_REQUEST_CODE = 123
     }
 
-    // Camera launcher
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -54,13 +55,11 @@ class TambahActivity : AppCompatActivity() {
         }
     }
 
-    // Gallery launcher
     private val pickGalleryLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            val filePath = uriToFile(uri, this)
-            selectedImageFile = filePath
+            selectedImageFile = uriToFile(uri, this)
             binding.imagePlaceholder.setImageURI(uri)
         } else {
             Toast.makeText(this, "Tidak ada gambar yang dipilih.", Toast.LENGTH_SHORT).show()
@@ -74,17 +73,9 @@ class TambahActivity : AppCompatActivity() {
 
         checkPermissions()
 
-        binding.btnCamera.setOnClickListener {
-            openCamera()
-        }
-
-        binding.btnGallery.setOnClickListener {
-            openGallery()
-        }
-
-        binding.btnUpload.setOnClickListener {
-            uploadStory()
-        }
+        binding.btnCamera.setOnClickListener { openCamera() }
+        binding.btnGallery.setOnClickListener { openGallery() }
+        binding.btnUpload.setOnClickListener { uploadStory() }
     }
 
     private fun checkPermissions() {
@@ -96,22 +87,11 @@ class TambahActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if (deniedPermissions.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, deniedPermissions.toTypedArray(), PERMISSION_REQUEST_CODE)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
-            }
+            ActivityCompat.requestPermissions(
+                this,
+                deniedPermissions.toTypedArray(),
+                PERMISSION_REQUEST_CODE
+            )
         }
     }
 
@@ -153,14 +133,14 @@ class TambahActivity : AppCompatActivity() {
 
     private fun compressImage(file: File): File {
         val bitmap = BitmapFactory.decodeFile(file.path)
-        var quality = 80 // Mulai dengan kualitas 80%
+        var quality = 80
         val outputStream = ByteArrayOutputStream()
 
         do {
             outputStream.reset()
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
-            quality -= 10 // Kurangi kualitas hingga ukuran file kecil
-        } while (outputStream.toByteArray().size > 1024 * 500) // Pastikan ukuran < 500KB
+            quality -= 10
+        } while (outputStream.toByteArray().size > 1024 * 500)
 
         val compressedFile = File(file.parent, "compressed_${file.name}")
         FileOutputStream(compressedFile).use {
@@ -174,7 +154,7 @@ class TambahActivity : AppCompatActivity() {
         val descriptionText = binding.editDescription.text.toString()
 
         if (file != null && descriptionText.isNotEmpty()) {
-            val compressedFile = compressImage(file) // Kompres file gambar
+            val compressedFile = compressImage(file)
             val description = descriptionText.toRequestBody("text/plain".toMediaType())
             val imageFile = compressedFile.asRequestBody("image/jpeg".toMediaType())
             val imageMultipart = MultipartBody.Part.createFormData(
@@ -186,19 +166,30 @@ class TambahActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 viewModel.getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
-                        val token = "Bearer ${user.token}"
-
                         binding.progressBar.visibility = View.VISIBLE
                         binding.btnUpload.isEnabled = false
 
-                        viewModel.uploadStory(token, description, imageMultipart)
+                        viewModel.uploadStory("Bearer ${user.token}", description, imageMultipart)
                             .observe(this@TambahActivity) { result ->
-                                // Sembunyikan ProgressBar setelah selesai upload
                                 binding.progressBar.visibility = View.GONE
                                 binding.btnUpload.isEnabled = true
 
                                 result.onSuccess {
                                     Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
+
+                                    // Objek ListStoryItem baru sesuai dengan gambar dan deskripsi
+                                    val newStory = ListStoryItem(
+                                        id = "story-${System.currentTimeMillis()}",
+                                        name = "Dicoding",
+                                        description = descriptionText,
+                                        photoUrl = file.absolutePath,
+                                        createdAt = "2022-01-08T06:34:18.598Z"
+                                    )
+
+                                    val intent = Intent().apply {
+                                        putExtra("NEW_STORY", newStory)
+                                    }
+                                    setResult(RESULT_OK, intent)
                                     finish()
                                 }.onFailure {
                                     Toast.makeText(this@TambahActivity, "Upload gagal: ${it.message}", Toast.LENGTH_SHORT).show()
