@@ -177,10 +177,10 @@ class TambahActivity : AppCompatActivity() {
                                 result.onSuccess {
                                     Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
 
-                                    // Objek ListStoryItem baru sesuai dengan gambar dan deskripsi
+                                    val userName = user.email.split("@")[0]
                                     val newStory = ListStoryItem(
                                         id = "story-${System.currentTimeMillis()}",
-                                        name = "Dicoding",
+                                        name = userName,
                                         description = descriptionText,
                                         photoUrl = file.absolutePath,
                                         createdAt = "2022-01-08T06:34:18.598Z"
@@ -204,4 +204,5 @@ class TambahActivity : AppCompatActivity() {
             Toast.makeText(this, "Isi deskripsi dan pilih gambar terlebih dahulu!", Toast.LENGTH_SHORT).show()
         }
     }
+
 }
