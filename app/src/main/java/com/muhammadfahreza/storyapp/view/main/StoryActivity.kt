@@ -51,7 +51,7 @@ class StoryActivity : AppCompatActivity() {
                     startActivity(Intent(this@StoryActivity, WelcomeActivity::class.java))
                     finish()
                 } else {
-                    refreshStories()
+                    refreshStories(user.token)
                 }
             }
         }
@@ -121,13 +121,9 @@ class StoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshStories() {
+    private fun refreshStories(token: String) {
         lifecycleScope.launch {
-            viewModel.getSession().collect { user ->
-                if (user.isLogin) {
-                    viewModel.fetchStories(user.token, page = 1, size = 10)
-                }
-            }
+            viewModel.fetchStories(token, page = 1, size = 10)
         }
     }
 
@@ -147,8 +143,9 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun logout() {
+        // Clear login status, but retain token
         lifecycleScope.launch {
-            viewModel.logout()
+            viewModel.clearLoginStatus()
         }
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()

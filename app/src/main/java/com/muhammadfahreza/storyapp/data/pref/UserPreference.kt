@@ -52,6 +52,12 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         return preferences[STORIES_KEY] ?: ""
     }
 
+    suspend fun updateLoginStatus(isLogin: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[IS_LOGIN_KEY] = isLogin
+        }
+    }
+
     companion object {
         @Volatile
         private var INSTANCE: UserPreference? = null

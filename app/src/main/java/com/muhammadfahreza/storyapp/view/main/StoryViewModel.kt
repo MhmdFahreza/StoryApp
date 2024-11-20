@@ -75,10 +75,11 @@ class StoryViewModel(
         return result
     }
 
-
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 
-    fun logout() {
-        viewModelScope.launch { userPreference.clearSession() }
+    fun clearLoginStatus() {
+        viewModelScope.launch {
+            userPreference.updateLoginStatus(false)
+        }
     }
 }
