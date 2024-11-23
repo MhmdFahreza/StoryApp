@@ -35,13 +35,9 @@ class UserRepository private constructor(
         userPreference.saveSession(user)
     }
 
-    fun getSession(): Flow<UserModel> {
-        return userPreference.getSession()
-    }
-
-    // Fungsi logout untuk menghapus sesi pengguna
-    suspend fun logout() {
+    suspend fun clearLoginStatus() {
         userPreference.clearSession()
+        userPreference.clearToken()
     }
 
     companion object {

@@ -33,6 +33,12 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         }
     }
 
+    suspend fun clearToken() {
+        dataStore.edit { preferences ->
+            preferences.remove(TOKEN_KEY)
+        }
+    }
+
     suspend fun clearSession() {
         dataStore.edit { preferences ->
             preferences.clear()

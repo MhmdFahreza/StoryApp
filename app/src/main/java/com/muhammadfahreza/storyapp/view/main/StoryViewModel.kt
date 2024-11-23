@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.muhammadfahreza.storyapp.data.StoryRepository
+import com.muhammadfahreza.storyapp.data.UserRepository
 import com.muhammadfahreza.storyapp.data.pref.UserModel
 import com.muhammadfahreza.storyapp.data.pref.UserPreference
 import com.muhammadfahreza.storyapp.data.response.ListStoryItem
@@ -18,7 +19,8 @@ import okhttp3.RequestBody
 
 class StoryViewModel(
     private val storyRepository: StoryRepository,
-    private val userPreference: UserPreference
+    private val userPreference: UserPreference,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _stories = MutableLiveData<List<ListStoryItem>>()
@@ -79,7 +81,7 @@ class StoryViewModel(
 
     fun clearLoginStatus() {
         viewModelScope.launch {
-            userPreference.updateLoginStatus(false)
+            userRepository.clearLoginStatus()
         }
     }
 }

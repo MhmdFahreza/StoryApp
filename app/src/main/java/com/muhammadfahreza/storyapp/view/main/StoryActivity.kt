@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
-import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
@@ -32,13 +31,16 @@ class StoryActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            val newStory = result.data?.getParcelableExtra<ListStoryItem>("NEW_STORY")
-            newStory?.let {
-                storyAdapter.addStoryAtTop(it)
-                binding.recyclerView.smoothScrollToPosition(0)
+            lifecycleScope.launch {
+                viewModel.getSession().collect { user ->
+                    if (user.isLogin) {
+                        refreshStories(user.token)
+                    }
+                }
             }
         }
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,7 +145,6 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        // Clear login status, but retain token
         lifecycleScope.launch {
             viewModel.clearLoginStatus()
         }
