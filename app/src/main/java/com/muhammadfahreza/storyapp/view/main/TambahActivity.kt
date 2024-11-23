@@ -73,9 +73,36 @@ class TambahActivity : AppCompatActivity() {
 
         checkPermissions()
 
+        // Memulihkan file gambar jika aplikasi ditutup
+        currentPhotoPath?.let { path ->
+            val file = File(path)
+            if (file.exists()) {
+                selectedImageFile = file
+                val imageUri = Uri.fromFile(selectedImageFile)
+                binding.imagePlaceholder.setImageURI(imageUri)
+            }
+        }
+
         binding.btnCamera.setOnClickListener { openCamera() }
         binding.btnGallery.setOnClickListener { openGallery() }
         binding.btnUpload.setOnClickListener { uploadStory() }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("currentPhotoPath", currentPhotoPath)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        currentPhotoPath = savedInstanceState.getString("currentPhotoPath")
+        currentPhotoPath?.let { path ->
+            selectedImageFile = File(path)
+            if (selectedImageFile?.exists() == true) {
+                val imageUri = Uri.fromFile(selectedImageFile)
+                binding.imagePlaceholder.setImageURI(imageUri)
+            }
+        }
     }
 
     private fun checkPermissions() {
@@ -153,7 +180,7 @@ class TambahActivity : AppCompatActivity() {
         val file = selectedImageFile
         val descriptionText = binding.editDescription.text.toString()
 
-        if (file != null && descriptionText.isNotEmpty()) {
+        if (file != null && file.exists() && descriptionText.isNotEmpty()) {
             val compressedFile = compressImage(file)
             val description = descriptionText.toRequestBody("text/plain".toMediaType())
             val imageFile = compressedFile.asRequestBody("image/jpeg".toMediaType())
@@ -182,7 +209,7 @@ class TambahActivity : AppCompatActivity() {
                                         id = "story-${System.currentTimeMillis()}",
                                         name = userName,
                                         description = descriptionText,
-                                        photoUrl = file.absolutePath,
+                                        photoUrl = compressedFile.absolutePath,
                                         createdAt = "2022-01-08T06:34:18.598Z"
                                     )
 
@@ -201,8 +228,7 @@ class TambahActivity : AppCompatActivity() {
                 }
             }
         } else {
-            Toast.makeText(this, "Isi deskripsi dan pilih gambar terlebih dahulu!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gambar tidak ditemukan atau deskripsi kosong. Harap pilih gambar ulang!", Toast.LENGTH_SHORT).show()
         }
     }
-
 }
