@@ -176,12 +176,13 @@ class TambahActivity : AppCompatActivity() {
 
     private fun uploadStory() {
         val file = selectedImageFile
-        val descriptionText = binding.editDescription.text.toString()
+        val descriptionText = binding.editDescription.text.toString().trim()
 
         if (file != null && file.exists() && descriptionText.isNotEmpty()) {
             val compressedFile = compressImage(file)
             val description = descriptionText.toRequestBody("text/plain".toMediaType())
-            val imageFile = compressedFile.asRequestBody("image/jpeg".toMediaType())
+            val imageFile =
+                compressedFile.asRequestBody("image/*".toMediaType())
             val imageMultipart = MultipartBody.Part.createFormData(
                 "photo",
                 compressedFile.name,
@@ -200,21 +201,36 @@ class TambahActivity : AppCompatActivity() {
                                 binding.btnUpload.isEnabled = true
 
                                 result.onSuccess {
-                                    Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        this@TambahActivity,
+                                        "Upload berhasil!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     setResult(RESULT_OK)
                                     finish()
                                 }.onFailure {
-                                    Toast.makeText(this@TambahActivity, "Upload gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        this@TambahActivity,
+                                        "Upload gagal: ${it.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                     } else {
-                        Toast.makeText(this@TambahActivity, "Token tidak ditemukan. Harap login ulang.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@TambahActivity,
+                            "Token tidak ditemukan. Harap login ulang.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
         } else {
-            Toast.makeText(this, "Gambar tidak ditemukan atau deskripsi kosong. Harap pilih gambar ulang!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Gambar tidak ditemukan atau deskripsi kosong. Harap pilih gambar ulang!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
-
 }
