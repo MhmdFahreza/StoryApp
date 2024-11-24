@@ -4,10 +4,8 @@ import com.muhammadfahreza.storyapp.data.pref.UserPreference
 import com.muhammadfahreza.storyapp.data.response.StoryResponse
 import com.muhammadfahreza.storyapp.data.response.UploadResponse
 import com.muhammadfahreza.storyapp.data.retrofit.ApiService
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 class StoryRepository private constructor(
     private val apiService: ApiService,
@@ -18,18 +16,13 @@ class StoryRepository private constructor(
     }
 
     suspend fun uploadStory(
-        token: String,
         photo: MultipartBody.Part,
-        description: RequestBody
+        description: RequestBody,
+        token: String
     ): UploadResponse {
-        return apiService.uploadStory(
-            photo = photo,
-            description = description,
-            lat = "0".toRequestBody("text/plain".toMediaType()),
-            lon = "0".toRequestBody("text/plain".toMediaType()),
-            headers = mapOf("Authorization" to token)
-        )
+        return apiService.uploadStory(photo, description, token)
     }
+
     companion object {
         @Volatile
         private var instance: StoryRepository? = null

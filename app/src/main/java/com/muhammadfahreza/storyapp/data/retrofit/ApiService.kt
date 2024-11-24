@@ -10,7 +10,6 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.HeaderMap
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -39,15 +38,11 @@ interface ApiService {
         @Query("size") size: Int
     ): StoryResponse
 
-
     @Multipart
     @POST("stories")
     suspend fun uploadStory(
         @Part photo: MultipartBody.Part,
         @Part("description") description: RequestBody,
-        @Part("lat") lat: RequestBody,
-        @Part("lon") lon: RequestBody,
-        @HeaderMap headers: Map<String, String>
+        @Header("Authorization") token: String
     ): UploadResponse
-
 }

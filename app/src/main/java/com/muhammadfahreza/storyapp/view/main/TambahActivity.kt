@@ -71,36 +71,9 @@ class TambahActivity : AppCompatActivity() {
 
         checkPermissions()
 
-        // Memulihkan file gambar jika aplikasi ditutup
-        currentPhotoPath?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                selectedImageFile = file
-                val imageUri = Uri.fromFile(selectedImageFile)
-                binding.imagePlaceholder.setImageURI(imageUri)
-            }
-        }
-
         binding.btnCamera.setOnClickListener { openCamera() }
         binding.btnGallery.setOnClickListener { openGallery() }
         binding.btnUpload.setOnClickListener { uploadStory() }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString("currentPhotoPath", currentPhotoPath)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        currentPhotoPath = savedInstanceState.getString("currentPhotoPath")
-        currentPhotoPath?.let { path ->
-            selectedImageFile = File(path)
-            if (selectedImageFile?.exists() == true) {
-                val imageUri = Uri.fromFile(selectedImageFile)
-                binding.imagePlaceholder.setImageURI(imageUri)
-            }
-        }
     }
 
     private fun checkPermissions() {
@@ -139,7 +112,7 @@ class TambahActivity : AppCompatActivity() {
         pickGalleryLauncher.launch("image/*")
     }
 
-    fun uriToFile(selectedImg: Uri, context: Context): File {
+    private fun uriToFile(selectedImg: Uri, context: Context): File {
         val contentResolver = context.contentResolver
         val myFile = createCustomTempFile(context)
 

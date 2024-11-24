@@ -70,14 +70,17 @@ class StoryViewModel(
     fun uploadStory(
         token: String,
         description: RequestBody,
-        image: MultipartBody.Part
+        photo: MultipartBody.Part
     ): LiveData<Result<UploadResponse>> {
         val result = MutableLiveData<Result<UploadResponse>>()
         viewModelScope.launch {
             try {
-                val response = storyRepository.uploadStory(token, image, description)
-                result.postValue(Result.success(response))
-                fetchStories(token)
+                if (token.isNotEmpty()) {
+                    val response = storyRepository.uploadStory(photo, description, token)
+                    result.postValue(Result.success(response))
+                } else {
+                    result.postValue(Result.failure(Exception("Token kosong")))
+                }
             } catch (e: Exception) {
                 result.postValue(Result.failure(e))
             }
@@ -85,11 +88,6 @@ class StoryViewModel(
         return result
     }
 
-    fun clearStoriesCache() {
-        viewModelScope.launch {
-            userPreference.clearStories()
-        }
-    }
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 
