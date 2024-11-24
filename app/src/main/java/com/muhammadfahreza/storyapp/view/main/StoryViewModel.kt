@@ -35,7 +35,6 @@ class StoryViewModel(
                 val storyList = response.listStory?.filterNotNull() ?: emptyList()
                 _stories.value = storyList
 
-                // Save stories to DataStore
                 saveStoriesToDataStore(storyList)
             } catch (e: Exception) {
                 e.printStackTrace()

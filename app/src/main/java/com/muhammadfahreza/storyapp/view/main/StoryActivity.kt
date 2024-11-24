@@ -14,7 +14,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import com.muhammadfahreza.storyapp.R
+import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
@@ -31,16 +33,18 @@ class StoryActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            lifecycleScope.launch {
-                viewModel.getSession().collect { user ->
-                    if (user.isLogin) {
-                        refreshStories(user.token)
-                    }
+            val newStoryJson = result.data?.getStringExtra("NEW_STORY_JSON")
+            newStoryJson?.let {
+                val newStory = Gson().fromJson(it, ListStoryItem::class.java)
+
+                val currentList = viewModel.stories.value?.toMutableList() ?: mutableListOf()
+                if (currentList.none { story -> story.id == newStory.id }) {
+                    currentList.add(0, newStory)
+                    storyAdapter.submitList(currentList)
                 }
             }
         }
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
