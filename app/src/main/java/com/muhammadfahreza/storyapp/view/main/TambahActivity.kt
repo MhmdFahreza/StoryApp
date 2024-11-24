@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
 import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityTambahBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
@@ -213,9 +214,10 @@ class TambahActivity : AppCompatActivity() {
                                         createdAt = "2022-01-08T06:34:18.598Z"
                                     )
 
-                                    val intent = Intent().apply {
-                                        putExtra("NEW_STORY", newStory)
-                                    }
+                                    val gson = Gson()
+                                    val json = gson.toJson(newStory)
+                                    val intent = Intent()
+                                    intent.putExtra("NEW_STORY_JSON", json)
                                     setResult(RESULT_OK, intent)
                                     finish()
                                 }.onFailure {
