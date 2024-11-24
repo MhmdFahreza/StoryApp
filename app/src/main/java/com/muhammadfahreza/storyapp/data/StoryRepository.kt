@@ -13,7 +13,7 @@ class StoryRepository private constructor(
     private val apiService: ApiService,
     private val userPreference: UserPreference
 ) {
-    suspend fun getStories(token: String, page: Int? = null, size: Int? = null): StoryResponse {
+    suspend fun getStories(token: String, page: Int, size: Int): StoryResponse {
         return apiService.getStories("Bearer $token", page, size)
     }
 

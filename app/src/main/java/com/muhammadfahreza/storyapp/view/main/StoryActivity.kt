@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
+import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
@@ -62,14 +63,11 @@ class StoryActivity : AppCompatActivity() {
 
         viewModel.stories.observe(this) { storyList ->
             storyAdapter.submitList(storyList)
-            if (storyList.isEmpty()) {
-                binding.recyclerView.visibility = View.GONE
-                binding.emptyView.visibility = View.VISIBLE
-            } else {
-                binding.recyclerView.visibility = View.VISIBLE
-                binding.emptyView.visibility = View.GONE
-            }
+            updateRecyclerViewVisibility(storyList)
         }
+
+        // Muat data stories dari cache saat aplikasi dibuka
+        viewModel.loadStoriesFromDataStore()
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
 
@@ -125,6 +123,16 @@ class StoryActivity : AppCompatActivity() {
     private fun refreshStories(token: String) {
         lifecycleScope.launch {
             viewModel.fetchStories(token)
+        }
+    }
+
+    private fun updateRecyclerViewVisibility(storyList: List<ListStoryItem>) {
+        if (storyList.isEmpty()) {
+            binding.recyclerView.visibility = View.GONE
+            binding.emptyView.visibility = View.VISIBLE
+        } else {
+            binding.recyclerView.visibility = View.VISIBLE
+            binding.emptyView.visibility = View.GONE
         }
     }
 

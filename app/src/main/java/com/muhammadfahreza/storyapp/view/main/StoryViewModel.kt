@@ -1,5 +1,6 @@
 package com.muhammadfahreza.storyapp.view.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,17 +29,15 @@ class StoryViewModel(
 
     private val gson = Gson()
 
-    fun fetchStories(token: String, page: Int? = null, size: Int? = null) {
+    fun fetchStories(token: String, page: Int = 1, size: Int = 10) {
         viewModelScope.launch {
             try {
                 val response = storyRepository.getStories(token, page, size)
-                val storyList = response.listStory?.filterNotNull() ?: emptyList()
-
-                _stories.value = storyList
-                saveStoriesToDataStore(storyList)
+                val stories = response.listStory?.filterNotNull() ?: emptyList()
+                _stories.value = stories
+                saveStoriesToDataStore(stories)
             } catch (e: Exception) {
-                e.printStackTrace()
-                loadStoriesFromDataStore()
+                Log.e("ERROR", "Failed to fetch stories: ${e.message}")
             }
         }
     }
@@ -49,15 +48,13 @@ class StoryViewModel(
         userPreference.saveStories(storiesJson)
     }
 
-    private fun loadStoriesFromDataStore() {
+    fun loadStoriesFromDataStore() {
         viewModelScope.launch {
             val storiesJson = userPreference.getStories()
             if (storiesJson.isNotEmpty()) {
                 val type = object : TypeToken<List<ListStoryItem>>() {}.type
                 val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
-                if (_stories.value.isNullOrEmpty()) {
-                    _stories.postValue(cachedStories)
-                }
+                _stories.postValue(cachedStories)
             }
         }
     }
