@@ -1,7 +1,6 @@
 package com.muhammadfahreza.storyapp.view.main
 
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -15,8 +14,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
-import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityTambahBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.createCustomTempFile
@@ -204,21 +201,7 @@ class TambahActivity : AppCompatActivity() {
 
                                 result.onSuccess {
                                     Toast.makeText(this@TambahActivity, "Upload berhasil!", Toast.LENGTH_SHORT).show()
-
-                                    val userName = user.email.split("@")[0]
-                                    val newStory = ListStoryItem(
-                                        id = "story-${System.currentTimeMillis()}",
-                                        name = userName,
-                                        description = descriptionText,
-                                        photoUrl = compressedFile.absolutePath,
-                                        createdAt = "2022-01-08T06:34:18.598Z"
-                                    )
-
-                                    val gson = Gson()
-                                    val json = gson.toJson(newStory)
-                                    val intent = Intent()
-                                    intent.putExtra("NEW_STORY_JSON", json)
-                                    setResult(RESULT_OK, intent)
+                                    setResult(RESULT_OK)
                                     finish()
                                 }.onFailure {
                                     Toast.makeText(this@TambahActivity, "Upload gagal: ${it.message}", Toast.LENGTH_SHORT).show()
@@ -233,4 +216,5 @@ class TambahActivity : AppCompatActivity() {
             Toast.makeText(this, "Gambar tidak ditemukan atau deskripsi kosong. Harap pilih gambar ulang!", Toast.LENGTH_SHORT).show()
         }
     }
+
 }

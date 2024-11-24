@@ -14,9 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
 import com.muhammadfahreza.storyapp.R
-import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
@@ -33,14 +31,11 @@ class StoryActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            val newStoryJson = result.data?.getStringExtra("NEW_STORY_JSON")
-            newStoryJson?.let {
-                val newStory = Gson().fromJson(it, ListStoryItem::class.java)
-
-                val currentList = viewModel.stories.value?.toMutableList() ?: mutableListOf()
-                if (currentList.none { story -> story.id == newStory.id }) {
-                    currentList.add(0, newStory)
-                    storyAdapter.submitList(currentList)
+            lifecycleScope.launch {
+                viewModel.getSession().collect { user ->
+                    if (user.token.isNotEmpty()) {
+                        refreshStories(user.token)
+                    }
                 }
             }
         }
@@ -129,7 +124,7 @@ class StoryActivity : AppCompatActivity() {
 
     private fun refreshStories(token: String) {
         lifecycleScope.launch {
-            viewModel.fetchStories(token, page = 1, size = 10)
+            viewModel.fetchStories(token)
         }
     }
 

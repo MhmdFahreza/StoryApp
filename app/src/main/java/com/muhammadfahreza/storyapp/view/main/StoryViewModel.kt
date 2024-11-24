@@ -33,8 +33,8 @@ class StoryViewModel(
             try {
                 val response = storyRepository.getStories(token, page, size)
                 val storyList = response.listStory?.filterNotNull() ?: emptyList()
-                _stories.value = storyList
 
+                _stories.value = storyList
                 saveStoriesToDataStore(storyList)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -42,6 +42,7 @@ class StoryViewModel(
             }
         }
     }
+
 
     private suspend fun saveStoriesToDataStore(stories: List<ListStoryItem>) {
         val storiesJson = gson.toJson(stories)
@@ -54,10 +55,13 @@ class StoryViewModel(
             if (storiesJson.isNotEmpty()) {
                 val type = object : TypeToken<List<ListStoryItem>>() {}.type
                 val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
-                _stories.postValue(cachedStories)
+                if (_stories.value.isNullOrEmpty()) {
+                    _stories.postValue(cachedStories)
+                }
             }
         }
     }
+
 
     fun uploadStory(
         token: String,
@@ -69,12 +73,14 @@ class StoryViewModel(
             try {
                 val response = storyRepository.uploadStory(token, image, description)
                 result.postValue(Result.success(response))
+                fetchStories(token)
             } catch (e: Exception) {
                 result.postValue(Result.failure(e))
             }
         }
         return result
     }
+
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 
