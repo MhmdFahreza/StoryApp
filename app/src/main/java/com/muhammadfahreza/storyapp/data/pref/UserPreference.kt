@@ -41,7 +41,9 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
 
     suspend fun clearSession() {
         dataStore.edit { preferences ->
-            preferences.clear()
+            preferences.remove(EMAIL_KEY)
+            preferences.remove(TOKEN_KEY)
+            preferences[IS_LOGIN_KEY] = false
         }
     }
 
@@ -58,11 +60,12 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         return preferences[STORIES_KEY] ?: ""
     }
 
-    suspend fun updateLoginStatus(isLogin: Boolean) {
+    suspend fun clearStories() {
         dataStore.edit { preferences ->
-            preferences[IS_LOGIN_KEY] = isLogin
+            preferences.remove(STORIES_KEY)
         }
     }
+
 
     companion object {
         @Volatile

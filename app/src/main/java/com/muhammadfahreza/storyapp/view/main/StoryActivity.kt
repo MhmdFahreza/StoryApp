@@ -53,7 +53,9 @@ class StoryActivity : AppCompatActivity() {
                     startActivity(Intent(this@StoryActivity, WelcomeActivity::class.java))
                     finish()
                 } else {
-                    refreshStories(user.token)
+                    if (user.token.isNotEmpty()) {
+                        refreshStories(user.token)
+                    }
                 }
             }
         }
@@ -66,7 +68,6 @@ class StoryActivity : AppCompatActivity() {
             updateRecyclerViewVisibility(storyList)
         }
 
-        // Muat data stories dari cache saat aplikasi dibuka
         viewModel.loadStoriesFromDataStore()
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
@@ -158,4 +159,5 @@ class StoryActivity : AppCompatActivity() {
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()
     }
+
 }

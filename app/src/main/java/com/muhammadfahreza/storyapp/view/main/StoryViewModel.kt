@@ -55,9 +55,16 @@ class StoryViewModel(
                 val type = object : TypeToken<List<ListStoryItem>>() {}.type
                 val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
                 _stories.postValue(cachedStories)
+            } else {
+                getSession().collect { user ->
+                    if (user.token.isNotEmpty()) {
+                        fetchStories(user.token)
+                    }
+                }
             }
         }
     }
+
 
 
     fun uploadStory(
@@ -78,6 +85,11 @@ class StoryViewModel(
         return result
     }
 
+    fun clearStoriesCache() {
+        viewModelScope.launch {
+            userPreference.clearStories()
+        }
+    }
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 
