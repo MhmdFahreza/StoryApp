@@ -35,7 +35,7 @@ class StoryActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 viewModel.getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
-                        refreshStories(user.token)
+                        refreshStories(user.token, skipCache = true)
                     }
                 }
             }
@@ -121,9 +121,13 @@ class StoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshStories(token: String) {
+    private fun refreshStories(token: String, skipCache: Boolean = false) {
         lifecycleScope.launch {
-            viewModel.fetchStories(token)
+            if (skipCache) {
+                viewModel.fetchStories(token)
+            } else {
+                viewModel.loadStoriesFromDataStore(skipCache)
+            }
         }
     }
 

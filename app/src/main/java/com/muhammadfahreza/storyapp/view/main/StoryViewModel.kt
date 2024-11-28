@@ -48,23 +48,30 @@ class StoryViewModel(
         userPreference.saveStories(storiesJson)
     }
 
-    fun loadStoriesFromDataStore() {
+    fun loadStoriesFromDataStore(skipCache: Boolean = false) {
         viewModelScope.launch {
-            val storiesJson = userPreference.getStories()
-            if (storiesJson.isNotEmpty()) {
-                val type = object : TypeToken<List<ListStoryItem>>() {}.type
-                val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
-                _stories.postValue(cachedStories)
-            } else {
+            if (skipCache) {
                 getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
                         fetchStories(user.token)
                     }
                 }
+            } else {
+                val storiesJson = userPreference.getStories()
+                if (storiesJson.isNotEmpty()) {
+                    val type = object : TypeToken<List<ListStoryItem>>() {}.type
+                    val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
+                    _stories.postValue(cachedStories)
+                } else {
+                    getSession().collect { user ->
+                        if (user.token.isNotEmpty()) {
+                            fetchStories(user.token)
+                        }
+                    }
+                }
             }
         }
     }
-
 
 
     fun uploadStory(
@@ -78,6 +85,8 @@ class StoryViewModel(
                 if (token.isNotEmpty()) {
                     val response = storyRepository.uploadStory(photo, description)
                     result.postValue(Result.success(response))
+
+                    fetchStories(token, page = 1, size = 10)
                 } else {
                     result.postValue(Result.failure(Exception("Token kosong")))
                 }
@@ -90,6 +99,7 @@ class StoryViewModel(
         }
         return result
     }
+
 
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
