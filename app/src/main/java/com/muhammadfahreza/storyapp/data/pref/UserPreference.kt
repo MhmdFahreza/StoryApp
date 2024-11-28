@@ -60,12 +60,10 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         return preferences[STORIES_KEY] ?: ""
     }
 
-    suspend fun clearStories() {
-        dataStore.edit { preferences ->
-            preferences.remove(STORIES_KEY)
-        }
+    suspend fun isTokenValid(): Boolean {
+        val user = getSession().first()
+        return user.token.isNotEmpty() && user.isLogin
     }
-
 
     companion object {
         @Volatile

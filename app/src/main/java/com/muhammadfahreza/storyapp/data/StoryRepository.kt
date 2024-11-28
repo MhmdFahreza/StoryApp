@@ -4,6 +4,7 @@ import com.muhammadfahreza.storyapp.data.pref.UserPreference
 import com.muhammadfahreza.storyapp.data.response.StoryResponse
 import com.muhammadfahreza.storyapp.data.response.UploadResponse
 import com.muhammadfahreza.storyapp.data.retrofit.ApiService
+import kotlinx.coroutines.flow.first
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -17,11 +18,12 @@ class StoryRepository private constructor(
 
     suspend fun uploadStory(
         photo: MultipartBody.Part,
-        description: RequestBody,
-        token: String
+        description: RequestBody
     ): UploadResponse {
-        return apiService.uploadStory(photo, description, token)
+        val token = userPreference.getSession().first().token
+        return apiService.uploadStory(photo, description, "Bearer $token")
     }
+
 
     companion object {
         @Volatile

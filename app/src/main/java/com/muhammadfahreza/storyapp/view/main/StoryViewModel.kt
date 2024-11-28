@@ -76,13 +76,16 @@ class StoryViewModel(
         viewModelScope.launch {
             try {
                 if (token.isNotEmpty()) {
-                    val response = storyRepository.uploadStory(photo, description, token)
+                    val response = storyRepository.uploadStory(photo, description)
                     result.postValue(Result.success(response))
                 } else {
                     result.postValue(Result.failure(Exception("Token kosong")))
                 }
             } catch (e: Exception) {
                 result.postValue(Result.failure(e))
+                if (e is retrofit2.HttpException && e.code() == 401) {
+                    clearLoginStatus()
+                }
             }
         }
         return result

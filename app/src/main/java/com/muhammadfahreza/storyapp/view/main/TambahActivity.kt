@@ -44,9 +44,14 @@ class TambahActivity : AppCompatActivity() {
     ) { success ->
         if (success) {
             currentPhotoPath?.let { path ->
-                selectedImageFile = File(path)
-                val imageUri = Uri.fromFile(selectedImageFile)
-                binding.imagePlaceholder.setImageURI(imageUri)
+                val newFile = File(path)
+                if (newFile.exists()) {
+                    selectedImageFile = newFile
+                    val imageUri = Uri.fromFile(newFile)
+                    binding.imagePlaceholder.setImageURI(imageUri)
+                } else {
+                    Toast.makeText(this, "File foto tidak ditemukan.", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
             Toast.makeText(this, "Operasi kamera dibatalkan.", Toast.LENGTH_SHORT).show()
@@ -57,7 +62,8 @@ class TambahActivity : AppCompatActivity() {
         ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            selectedImageFile = uriToFile(uri, this)
+            val file = uriToFile(uri, this)
+            selectedImageFile = file
             binding.imagePlaceholder.setImageURI(uri)
         } else {
             Toast.makeText(this, "Tidak ada gambar yang dipilih.", Toast.LENGTH_SHORT).show()
@@ -77,19 +83,17 @@ class TambahActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        val permissions = arrayOf(
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        val permissions = if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else {
+            arrayOf(android.Manifest.permission.CAMERA)
+        }
+
         val deniedPermissions = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if (deniedPermissions.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                this,
-                deniedPermissions.toTypedArray(),
-                PERMISSION_REQUEST_CODE
-            )
+            ActivityCompat.requestPermissions(this, deniedPermissions.toTypedArray(), PERMISSION_REQUEST_CODE)
         }
     }
 
@@ -154,8 +158,7 @@ class TambahActivity : AppCompatActivity() {
         if (file != null && file.exists() && descriptionText.isNotEmpty()) {
             val compressedFile = compressImage(file)
             val description = descriptionText.toRequestBody("text/plain".toMediaType())
-            val imageFile =
-                compressedFile.asRequestBody("image/*".toMediaType())
+            val imageFile = compressedFile.asRequestBody("image/*".toMediaType())
             val imageMultipart = MultipartBody.Part.createFormData(
                 "photo",
                 compressedFile.name,
@@ -181,10 +184,14 @@ class TambahActivity : AppCompatActivity() {
                                     ).show()
                                     setResult(RESULT_OK)
                                     finish()
-                                }.onFailure {
+                                }.onFailure { e ->
+                                    val errorMessage = when (e) {
+                                        is retrofit2.HttpException -> "HTTP ${e.code()} ${e.message()}"
+                                        else -> e.message ?: "Error tidak diketahui"
+                                    }
                                     Toast.makeText(
                                         this@TambahActivity,
-                                        "Upload gagal: ${it.message}",
+                                        "Upload gagal: $errorMessage",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
