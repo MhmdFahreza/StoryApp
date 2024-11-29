@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.muhammadfahreza.storyapp.databinding.ActivityTambahBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.createCustomTempFile
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -166,43 +167,42 @@ class TambahActivity : AppCompatActivity() {
             )
 
             lifecycleScope.launch {
-                viewModel.getSession().collect { user ->
-                    if (user.token.isNotEmpty()) {
-                        binding.progressBar.visibility = View.VISIBLE
-                        binding.btnUpload.isEnabled = false
+                val user = viewModel.getSession().first()
+                if (user.token.isNotEmpty()) {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.btnUpload.isEnabled = false
 
-                        viewModel.uploadStory("Bearer ${user.token}", description, imageMultipart)
-                            .observe(this@TambahActivity) { result ->
-                                binding.progressBar.visibility = View.GONE
-                                binding.btnUpload.isEnabled = true
+                    viewModel.uploadStory("Bearer ${user.token}", description, imageMultipart)
+                        .observe(this@TambahActivity) { result ->
+                            binding.progressBar.visibility = View.GONE
+                            binding.btnUpload.isEnabled = true
 
-                                result.onSuccess {
-                                    Toast.makeText(
-                                        this@TambahActivity,
-                                        "Upload berhasil!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    setResult(RESULT_OK)
-                                    finish()
-                                }.onFailure { e ->
-                                    val errorMessage = when (e) {
-                                        is retrofit2.HttpException -> "HTTP ${e.code()} ${e.message()}"
-                                        else -> e.message ?: "Error tidak diketahui"
-                                    }
-                                    Toast.makeText(
-                                        this@TambahActivity,
-                                        "Upload gagal: $errorMessage",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                            result.onSuccess {
+                                Toast.makeText(
+                                    this@TambahActivity,
+                                    "Upload berhasil!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                setResult(RESULT_OK)
+                                finish()
+                            }.onFailure { e ->
+                                val errorMessage = when (e) {
+                                    is retrofit2.HttpException -> "HTTP ${e.code()} ${e.message()}"
+                                    else -> e.message ?: "Error tidak diketahui"
                                 }
+                                Toast.makeText(
+                                    this@TambahActivity,
+                                    "Upload gagal: $errorMessage",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                    } else {
-                        Toast.makeText(
-                            this@TambahActivity,
-                            "Token tidak ditemukan. Harap login ulang.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                        }
+                } else {
+                    Toast.makeText(
+                        this@TambahActivity,
+                        "Token tidak ditemukan. Harap login ulang.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         } else {
