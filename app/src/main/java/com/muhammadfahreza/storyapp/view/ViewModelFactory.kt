@@ -10,6 +10,7 @@ import com.muhammadfahreza.storyapp.data.pref.dataStore
 import com.muhammadfahreza.storyapp.di.Injection
 import com.muhammadfahreza.storyapp.view.login.LoginViewModel
 import com.muhammadfahreza.storyapp.view.main.StoryViewModel
+import com.muhammadfahreza.storyapp.view.maps.MapsViewModel
 import com.muhammadfahreza.storyapp.view.signup.SignupViewModel
 
 class ViewModelFactory private constructor(
@@ -29,6 +30,9 @@ class ViewModelFactory private constructor(
             }
             modelClass.isAssignableFrom(SignupViewModel::class.java) -> {
                 SignupViewModel(userRepository) as T
+            }
+            modelClass.isAssignableFrom(MapsViewModel::class.java) -> {
+                MapsViewModel(storyRepository) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: " + modelClass.name)
         }

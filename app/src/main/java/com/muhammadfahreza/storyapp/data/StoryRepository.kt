@@ -24,6 +24,9 @@ class StoryRepository private constructor(
         return apiService.uploadStory(photo, description, "Bearer $token")
     }
 
+    suspend fun getStoriesWithLocation(): StoryResponse {
+        return apiService.getStoriesWithLocation()
+    }
 
     companion object {
         @Volatile

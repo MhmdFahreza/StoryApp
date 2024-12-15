@@ -62,4 +62,5 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation (libs.glide)
     annotationProcessor (libs.glide.compiler)
+    implementation(libs.androidx.paging.runtime.ktx)
 }
