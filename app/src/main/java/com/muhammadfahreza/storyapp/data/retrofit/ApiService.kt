@@ -45,4 +45,9 @@ interface ApiService {
         @Part("description") description: RequestBody,
         @Header("Authorization") token: String
     ): UploadResponse
+
+    @GET("stories")
+    suspend fun getStoriesWithLocation(
+        @Query("location") location : Int = 1,
+    ): StoryResponse
 }

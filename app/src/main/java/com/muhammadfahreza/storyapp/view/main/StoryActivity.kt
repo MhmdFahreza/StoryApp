@@ -18,6 +18,7 @@ import com.muhammadfahreza.storyapp.R
 import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
+import com.muhammadfahreza.storyapp.view.maps.MapsActivity
 import com.muhammadfahreza.storyapp.view.welcome.WelcomeActivity
 import kotlinx.coroutines.launch
 
@@ -72,11 +73,17 @@ class StoryActivity : AppCompatActivity() {
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
 
+        binding.mapsIcon.setOnClickListener {
+            val intent = Intent(this, MapsActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.addFab.setOnClickListener {
             val intent = Intent(this, TambahActivity::class.java)
             tambahActivityLauncher.launch(intent)
         }
     }
+
 
     private fun showPopupMenu() {
         val popup = PopupMenu(this, binding.menuIcon)
