@@ -63,4 +63,10 @@ dependencies {
     implementation (libs.glide)
     annotationProcessor (libs.glide.compiler)
     implementation(libs.androidx.paging.runtime.ktx)
+    androidTestImplementation(libs.androidx.core.testing)
+    testImplementation(libs.androidx.core.testing)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.inline)
 }

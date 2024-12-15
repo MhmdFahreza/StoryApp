@@ -27,11 +27,10 @@ class StoryViewModel(
 ) : ViewModel() {
 
     private val _stories = MutableLiveData<List<ListStoryItem>>()
-    val stories: LiveData<List<ListStoryItem>> get() = _stories
 
     private val gson = Gson()
 
-    fun fetchStories(token: String, page: Int = 1, size: Int = 10) {
+    private fun fetchStories(token: String, page: Int = 1, size: Int = 10) {
         viewModelScope.launch {
             try {
                 val response = storyRepository.getStories(token, page, size)
