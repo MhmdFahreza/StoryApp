@@ -13,9 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.muhammadfahreza.storyapp.R
-import com.muhammadfahreza.storyapp.data.response.ListStoryItem
 import com.muhammadfahreza.storyapp.databinding.ActivityStoryBinding
 import com.muhammadfahreza.storyapp.view.ViewModelFactory
 import com.muhammadfahreza.storyapp.view.maps.MapsActivity
@@ -36,7 +36,7 @@ class StoryActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 viewModel.getSession().collect { user ->
                     if (user.token.isNotEmpty()) {
-                        refreshStories(user.token, skipCache = true)
+                        refreshStories(user.token)
                     }
                 }
             }
@@ -55,7 +55,7 @@ class StoryActivity : AppCompatActivity() {
                     finish()
                 } else {
                     if (user.token.isNotEmpty()) {
-                        refreshStories(user.token)
+                        observeStories(user.token)
                     }
                 }
             }
@@ -63,16 +63,9 @@ class StoryActivity : AppCompatActivity() {
 
         setupView()
         setupRecyclerView()
-
-        viewModel.stories.observe(this) { storyList ->
-            storyAdapter.submitList(storyList)
-            updateRecyclerViewVisibility(storyList)
-        }
-
-        viewModel.loadStoriesFromDataStore()
+        setupLoadStateListener()
 
         binding.menuIcon.setOnClickListener { showPopupMenu() }
-
         binding.mapsIcon.setOnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
@@ -83,7 +76,6 @@ class StoryActivity : AppCompatActivity() {
             tambahActivityLauncher.launch(intent)
         }
     }
-
 
     private fun showPopupMenu() {
         val popup = PopupMenu(this, binding.menuIcon)
@@ -128,24 +120,29 @@ class StoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshStories(token: String, skipCache: Boolean = false) {
+    private fun observeStories(token: String) {
         lifecycleScope.launch {
-            if (skipCache) {
-                viewModel.fetchStories(token)
-            } else {
-                viewModel.loadStoriesFromDataStore(skipCache)
+            viewModel.getStories(token).collect { pagingData ->
+                storyAdapter.submitData(pagingData)
             }
         }
     }
 
-    private fun updateRecyclerViewVisibility(storyList: List<ListStoryItem>) {
-        if (storyList.isEmpty()) {
-            binding.recyclerView.visibility = View.GONE
-            binding.emptyView.visibility = View.VISIBLE
-        } else {
-            binding.recyclerView.visibility = View.VISIBLE
-            binding.emptyView.visibility = View.GONE
+    private fun setupLoadStateListener() {
+        storyAdapter.addLoadStateListener { loadState ->
+            binding.progressBar.visibility = if (loadState.refresh is LoadState.Loading) View.VISIBLE else View.GONE
+            if (loadState.refresh is LoadState.Error) {
+                binding.errorView.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+            } else {
+                binding.errorView.visibility = View.GONE
+                binding.recyclerView.visibility = View.VISIBLE
+            }
         }
+    }
+
+    private fun refreshStories(token: String) {
+        observeStories(token)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -170,5 +167,4 @@ class StoryActivity : AppCompatActivity() {
         startActivity(Intent(this, WelcomeActivity::class.java))
         finish()
     }
-
 }

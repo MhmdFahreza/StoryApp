@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.muhammadfahreza.storyapp.data.StoryRepository
@@ -100,7 +102,9 @@ class StoryViewModel(
         return result
     }
 
-
+    fun getStories(token: String): Flow<PagingData<ListStoryItem>> {
+        return storyRepository.getPagedStories(token).cachedIn(viewModelScope)
+    }
 
     fun getSession(): Flow<UserModel> = userPreference.getSession()
 
