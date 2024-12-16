@@ -27,4 +27,7 @@
     <string name="upload">Upload</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="maps">Maps</string>
+    <string name="gambar_login">gambar login</string>
+    <string name="gmbar_welcome">gmbar_welcome</string>
+    <string name="gambar_signup">gambar signup</string>
 </resources>

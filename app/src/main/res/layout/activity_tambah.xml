@@ -38,7 +38,8 @@
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toStartOf="@id/guidelineCenter"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imagePlaceholder" />
+        app:layout_constraintTop_toBottomOf="@id/imagePlaceholder"
+        tools:ignore="VisualLintButtonSize" />
 
     <Button
         android:id="@+id/btnGallery"
@@ -51,7 +52,8 @@
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/guidelineCenter"
-        app:layout_constraintTop_toBottomOf="@id/imagePlaceholder" />
+        app:layout_constraintTop_toBottomOf="@id/imagePlaceholder"
+        tools:ignore="VisualLintButtonSize" />
 
     <EditText
         android:id="@+id/editDescription"
@@ -66,7 +68,8 @@
         android:textColorHint="@color/navy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnCamera" />
+        app:layout_constraintTop_toBottomOf="@id/btnCamera"
+        tools:ignore="VisualLintTextFieldSize" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -88,6 +91,7 @@
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editDescription" />
+        app:layout_constraintTop_toBottomOf="@id/editDescription"
+        tools:ignore="VisualLintButtonSize" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

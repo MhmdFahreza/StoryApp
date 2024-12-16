@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.muhammadfahreza.storyapp.data.StoryRepository
 import com.muhammadfahreza.storyapp.data.UserRepository
 import com.muhammadfahreza.storyapp.data.pref.UserModel
@@ -43,37 +42,10 @@ class StoryViewModel(
         }
     }
 
-
     private suspend fun saveStoriesToDataStore(stories: List<ListStoryItem>) {
         val storiesJson = gson.toJson(stories)
         userPreference.saveStories(storiesJson)
     }
-
-    fun loadStoriesFromDataStore(skipCache: Boolean = false) {
-        viewModelScope.launch {
-            if (skipCache) {
-                getSession().collect { user ->
-                    if (user.token.isNotEmpty()) {
-                        fetchStories(user.token)
-                    }
-                }
-            } else {
-                val storiesJson = userPreference.getStories()
-                if (storiesJson.isNotEmpty()) {
-                    val type = object : TypeToken<List<ListStoryItem>>() {}.type
-                    val cachedStories: List<ListStoryItem> = gson.fromJson(storiesJson, type)
-                    _stories.postValue(cachedStories)
-                } else {
-                    getSession().collect { user ->
-                        if (user.token.isNotEmpty()) {
-                            fetchStories(user.token)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 
     fun uploadStory(
         token: String,
