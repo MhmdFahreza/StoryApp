@@ -11,6 +11,7 @@
         android:id="@+id/iv_detail"
         android:layout_width="match_parent"
         android:layout_height="200dp"
+        android:contentDescription="@string/gambar_detail"
         android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

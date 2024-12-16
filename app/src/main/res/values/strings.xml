@@ -30,4 +30,5 @@
     <string name="gambar_login">gambar login</string>
     <string name="gmbar_welcome">gmbar_welcome</string>
     <string name="gambar_signup">gambar signup</string>
+    <string name="gambar_detail">gambar detail</string>
 </resources>
