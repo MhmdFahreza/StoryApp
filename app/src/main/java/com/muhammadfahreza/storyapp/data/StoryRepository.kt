@@ -42,7 +42,8 @@ class StoryRepository private constructor(
     }
 
     suspend fun getStoriesWithLocation(): StoryResponse {
-        return apiService.getStoriesWithLocation()
+        val token = userPreference.getSession().first().token
+        return apiService.getStoriesWithLocation("Bearer $token")
     }
 
     companion object {
